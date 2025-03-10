@@ -8,6 +8,9 @@ import requests
 def scrape_major(url):
     """
     Scrapes the whole major (field of study)
+    Some assumptions:
+    Every semester is a table that as the rows has the subjects with their data
+    Sometimes the table is not the semester but the optional subjects table, in that case they are added to the previous normal semester
     :param url: url to the major data
     :type url: str
     :return: all parsed and extracted data
@@ -21,11 +24,26 @@ def scrape_major(url):
     semester_divs = soup.find_all("div", attrs={'class': 'iform'})
 
     # extracting base major subjects (from 1 to 4 semester)
-    for semester in semester_divs[:4]:
+    for semester in semester_divs:
+        if int(semester.find('h3').text.split()[1]) == 5:
+            break
         # TODO nie są brane pod uwagę nie liczbowe semestry a tabeli przdmiotow obieralnych, zrobic to
-        # extracting usual semester data
-        semester_data = extract_semester_data(semester)
-        base_major['semesters'].append(semester_data)
+        # if the provided semester is not full semester but the optional subjects
+        if 'obieralne' in semester.find("h3").text:
+            # parse the optional subjects
+            optional_subjects_data = parse_optional_subjects(semester)
+            # add optional subjects as the subdata in the respective subject 'Przedmioty obieralne'
+            for subject in base_major['semesters'][len(base_major['semesters']) - 1]['subjects']:
+                if subject['subject_name'] in semester.find("h3").text:
+                    subject['optional_subjects'] = optional_subjects_data
+                    break
+        else:
+            # extracting usual semester table data
+            semester_data = extract_semester_data(semester)
+            base_major['semesters'].append(semester_data)
+            print(json.dumps(base_major, indent=4))
+            print('\n')
+
 
     print(json.dumps(base_major, indent=4))
 
@@ -42,15 +60,15 @@ def scrape_major(url):
 def extract_semester_data(semester: str):
     """
     Extracts data from the usual semester table
-    :param: Semester data as a html string
+    :param: Semester table data as a html string
     :return: Dictionary with the semester data
     :rtype: Dictionary
     """
     # semester number
-    semester_data = {
-        'semester': int(semester.find('h3').text.split()[1]),
-        'subjects': []
-    }
+    semester_data = {}
+    if 'obieralne' not in semester.find("h3").text: # if it is normal semester data
+        semester_data['semester'] = int(semester.find('h3').text.split()[1])
+    semester_data['subjects'] = []
     # extract array of semester's subjects
     table = semester.find('table')
     if table:
@@ -62,8 +80,18 @@ def extract_semester_data(semester: str):
             for subject_index, subject in enumerate(subjects):
                 subject_name = subject.find('td', attrs={'class': 'w4'}).text
                 semester_data['subjects'].append({'subject_name': subject_name})
-                raw_onclick_attribute = (subject.find('td', attrs={'class': 'w2 doSrodka'})
-                                         .find('a').get('onclick'))
+                try:
+                    raw_onclick_attribute = (subject.find('td', attrs={'class': 'w2 doSrodka'})
+                                             .find('a').get('onclick'))
+                except AttributeError:
+                    # if there is no overview file or the subject is about optional subjects then
+                    # check if it is the optional subjects subject
+                    if 'obieralne' in subject.find('td', attrs={'class': 'w2 doSrodka'}).text:
+                        semester_data['subjects'][subject_index]['subject_overview'] = 'Przedmioty obieralne'
+                    else:
+                        semester_data['subjects'][subject_index]['subject_overview'] = 'No overview for this subject'
+                    continue
+
                 # extract just the link to the subject overview file
                 subject_overview_link = re.search(r"window\.open\('([^']+)'", raw_onclick_attribute)
                 if subject_overview_link:
@@ -72,9 +100,13 @@ def extract_semester_data(semester: str):
                         'https://programy.p.lodz.pl/ectslabel-web/' +
                         subject_overview_link.group(1).replace(' ', '%20')
                     )
-                    semester_data['subjects'][subject_index].update(subject_overview)
+                    semester_data['subjects'][subject_index]['subject_overview'] = subject_overview
 
     return semester_data
+
+
+def parse_optional_subjects(optional_subjects_table):
+    return extract_semester_data(optional_subjects_table)
 
 
 def parse_subject_overview_file(link):
@@ -106,9 +138,13 @@ def parse_subject_overview_file(link):
     return subject_overview_data
 
 
-scrape_major(''
-             'https://programy.p.lodz.pl/ectslabel-web/'
-             'kierunekSiatkaV4.jsp?l=pl&w=informatyka%20stosowana'
-             '&pkId=1654&p=6909&stopien=studia%20pierwszego%20stopnia'
-             '&tryb=studia%20stacjonarne&v=4'
-             )
+# scrape_major(''
+#              'https://programy.p.lodz.pl/ectslabel-web/'
+#              'kierunekSiatkaV4.jsp?l=pl&w=informatyka%20stosowana'
+#              '&pkId=1654&p=6909&stopien=studia%20pierwszego%20stopnia'
+#              '&tryb=studia%20stacjonarne&v=4'
+#              )
+
+# link with optional subjects
+scrape_major(
+    "https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=analityka%20chemiczna&pkId=1687&p=6947&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4")
