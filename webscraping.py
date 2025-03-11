@@ -3,6 +3,38 @@ from bs4 import BeautifulSoup
 import json
 import re
 import requests
+import time
+
+
+def get_html_page(url, retries=5, delay=1000):
+    """
+    Access the link with respective delays and retries if failed in order to prevent
+    from failing to fetch the page due to being blocked
+    :param delay:
+    :type delay:
+    :param retries:
+    :type retries:
+    :param url: url to the webpage
+    :type url:
+    :return: webpage as a html
+    :rtype: str
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+    }
+    # retry retries time the request with respective growing delay
+    for attempt in range(retries):
+        try:
+            print(f"Attempt {attempt + 1}: Fetching {url}...")
+            response = requests.get(url, headers=headers, timeout=15)
+            response.raise_for_status()
+            return response.content
+        except requests.exceptions.RequestException as e:
+            print(f"Error: {e}. Retrying in {delay} seconds...")
+            time.sleep(delay)
+            delay *= 2  # increase delay time
+    print(f'Failed to load the webpage {url}')
+    return None
 
 
 def scrape_major(url):
@@ -16,19 +48,20 @@ def scrape_major(url):
     :return: all parsed and extracted data
     :rtype: dictionary
     """
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, "html5lib", from_encoding='utf-8')
+    webpage = get_html_page(url)
+    soup = BeautifulSoup(webpage, "html5lib", from_encoding='utf-8')
 
     base_major = {'semesters': []}
     # get major data as the HTML
     semester_divs = soup.find_all("div", attrs={'class': 'iform'})
 
-    # extracting base major subjects (from 1 to 4 semester)
+    # extracting base major subjects (from 1 to last semester)
     for semester in semester_divs:
-        if int(semester.find('h3').text.split()[1]) == 5:
-            break
-        # TODO nie są brane pod uwagę nie liczbowe semestry a tabeli przdmiotow obieralnych, zrobic to
+        # if int(semester.find('h3').text.split()[1]) == 5:
+        #     break
         # if the provided semester is not full semester but the optional subjects
+        if not semester.find("h3"):  # if there are no semesters left
+            break
         if 'obieralne' in semester.find("h3").text:
             # parse the optional subjects
             optional_subjects_data = parse_optional_subjects(semester)
@@ -41,11 +74,8 @@ def scrape_major(url):
             # extracting usual semester table data
             semester_data = extract_semester_data(semester)
             base_major['semesters'].append(semester_data)
-            print(json.dumps(base_major, indent=4))
-            print('\n')
 
-
-    print(json.dumps(base_major, indent=4))
+    save_to_json("base_major", base_major)
 
     # extracting other subjects from specialties
     # if there are no specialties then add subjects to the base major
@@ -57,6 +87,11 @@ def scrape_major(url):
     return "dupa"
 
 
+def save_to_json(filename, data):
+    with open(f'{filename}.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+
 def extract_semester_data(semester: str):
     """
     Extracts data from the usual semester table
@@ -66,7 +101,7 @@ def extract_semester_data(semester: str):
     """
     # semester number
     semester_data = {}
-    if 'obieralne' not in semester.find("h3").text: # if it is normal semester data
+    if 'obieralne' not in semester.find("h3").text:  # if it is normal semester data
         semester_data['semester'] = int(semester.find('h3').text.split()[1])
     semester_data['subjects'] = []
     # extract array of semester's subjects
@@ -119,8 +154,8 @@ def parse_subject_overview_file(link):
         - Szczegółowe treści przedmiotu
     @:param Full link to the overview file
     """
-    r = requests.get(link)
-    soup = BeautifulSoup(r.content, "html5lib", from_encoding='utf-8')
+    webpage = get_html_page(link)
+    soup = BeautifulSoup(webpage, "html5lib", from_encoding='utf-8')
     table_rows = soup.find('table').find('tbody').find_all('tr')
     subject_overview_data = {}
     for row in table_rows:

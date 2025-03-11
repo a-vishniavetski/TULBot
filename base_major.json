@@ -1,0 +1,480 @@
+{
+    "semesters": [
+        {
+            "semester": 1,
+            "subjects": [
+                {
+                    "subject_name": "Chemia og\u00f3lna i nieorganiczna I"
+                },
+                {
+                    "subject_name": "Metody pobierania i przygotowania pr\u00f3bek"
+                },
+                {
+                    "subject_name": "Technologie informatyczne I"
+                },
+                {
+                    "subject_name": "Maszynoznawstwo i grafika in\u017cynierska"
+                },
+                {
+                    "subject_name": "Ergonomia i bezpiecze\u0144stwo pracy"
+                },
+                {
+                    "subject_name": "Technika pracy w laboratorium chemicznym"
+                },
+                {
+                    "subject_name": "Sztuka studiowania"
+                },
+                {
+                    "subject_name": "Matematyka I"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.1 do wyboru",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Etyka \u015brodowiska"
+                            },
+                            {
+                                "subject_name": "Sztuka i chemia"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 2,
+            "subjects": [
+                {
+                    "subject_name": "Chemia og\u00f3lna i nieorganiczna II"
+                },
+                {
+                    "subject_name": "Statystyczna analiza danych"
+                },
+                {
+                    "subject_name": "Fizyka"
+                },
+                {
+                    "subject_name": "Fizyka Laboratorium"
+                },
+                {
+                    "subject_name": "Technologie informatyczne II"
+                },
+                {
+                    "subject_name": "Matematyka II"
+                },
+                {
+                    "subject_name": "J\u0119zyk obcy modu\u0142 1"
+                },
+                {
+                    "subject_name": "Wychowanie fizyczne"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.2 do wyboru B",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Systemy zarz\u0105dzania jako\u015bci\u0105"
+                            },
+                            {
+                                "subject_name": "Quality management"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.2 do wyboru A",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Chemia og\u00f3lna i nieorganiczna - laboratorium"
+                            },
+                            {
+                                "subject_name": "General and inorganic chemistry laboratory"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 3,
+            "subjects": [
+                {
+                    "subject_name": "Chemia organiczna"
+                },
+                {
+                    "subject_name": "Chemia fizyczna I"
+                },
+                {
+                    "subject_name": "Chemia analityczna"
+                },
+                {
+                    "subject_name": "Obliczenia analityczne"
+                },
+                {
+                    "subject_name": "Zielona chemia"
+                },
+                {
+                    "subject_name": "Elektrotechnika z elementami elektroniki"
+                },
+                {
+                    "subject_name": "J\u0119zyk obcy modu\u0142 2"
+                },
+                {
+                    "subject_name": "Wychowanie fizyczne"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.3 do wyboru",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Chemia analityczna I laboratorium"
+                            },
+                            {
+                                "subject_name": "Analytical chemistry l laboratory"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 4,
+            "subjects": [
+                {
+                    "subject_name": "Chemia fizyczna  II"
+                },
+                {
+                    "subject_name": "Podstawy i walidacja procedur analitycznych I"
+                },
+                {
+                    "subject_name": "Analityka i techniki \u201eomics\u201d"
+                },
+                {
+                    "subject_name": "Chemia s\u0105dowa"
+                },
+                {
+                    "subject_name": "Chemometria"
+                },
+                {
+                    "subject_name": "Techniki obliczeniowe i symulacyjne w chemii"
+                },
+                {
+                    "subject_name": "Polimery i kompozyty"
+                },
+                {
+                    "subject_name": "Podstawy biochemii"
+                },
+                {
+                    "subject_name": "Sensory chemiczne i biosensory"
+                },
+                {
+                    "subject_name": "J\u0119zyk obcy modu\u0142 3"
+                },
+                {
+                    "subject_name": "Wychowanie fizyczne"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.4 do wyboru A",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Chemia organiczna - laboratorium"
+                            },
+                            {
+                                "subject_name": "Organic Chemistry - laboratory"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.4 do wyboru B",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Chemia fizyczna - laboratorium"
+                            },
+                            {
+                                "subject_name": "Physical Chemistry - laboratory"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 5,
+            "subjects": [
+                {
+                    "subject_name": "Wybrane metody analizy instrumentalnej"
+                },
+                {
+                    "subject_name": "Analiza \u015bladowa i metody stosowane w analizie \u015blad\u00f3w"
+                },
+                {
+                    "subject_name": "Analityka i monitoring \u015brodowiska"
+                },
+                {
+                    "subject_name": "Analiza szybkich proces\u00f3w chemicznych"
+                },
+                {
+                    "subject_name": "Spektroskopia"
+                },
+                {
+                    "subject_name": "Spektrometria mas"
+                },
+                {
+                    "subject_name": "Dobra praktyka laboratoryjna"
+                },
+                {
+                    "subject_name": "J\u0119zyk obcy modu\u0142 4E"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.5 do wyboru A",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Ochrona w\u0142asno\u015bci intelektualnych"
+                            },
+                            {
+                                "subject_name": "Ochrona w\u0142asno\u015bci przemys\u0142owej"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.5 do wyboru B",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "English Technical and Chemical Terminology"
+                            },
+                            {
+                                "subject_name": "English Technical and Chemical Terminology"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.5 do wyboru C",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Elektroniczne \u017ar\u00f3d\u0142a informacji chemicznej"
+                            },
+                            {
+                                "subject_name": "Electronic Resources of Chemical Information"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 6,
+            "subjects": [
+                {
+                    "subject_name": "Metody separacyjne"
+                },
+                {
+                    "subject_name": "Analiza przemys\u0142owa"
+                },
+                {
+                    "subject_name": "Modu\u0142 sumatywny"
+                },
+                {
+                    "subject_name": "ACh - I st. od 20/21 - sem.6 blok II",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Analiza i identyfikacja materia\u0142\u00f3w polimerowych"
+                            },
+                            {
+                                "subject_name": "Metody termiczne i reologiczne w analizie polimer\u00f3w"
+                            },
+                            {
+                                "subject_name": "Analiza polimer\u00f3w metodami spektroskopowymi"
+                            },
+                            {
+                                "subject_name": "Analiza struktur nadcz\u0105steczkowych materia\u0142\u00f3w molekularnych"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh - I st. od 20/21 - sem.6 blok IV",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Analiza zwi\u0105zk\u00f3w chiralnych"
+                            },
+                            {
+                                "subject_name": "Analiza zwi\u0105zk\u00f3w toksycznych"
+                            },
+                            {
+                                "subject_name": "Metody oznaczania profilu zanieczyszcze\u0144 w procesie wytwarzania lek\u00f3w"
+                            },
+                            {
+                                "subject_name": "Metody rozdzielania  i identyfikacji biocz\u0105steczek"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh - I st. od 20/21 - sem.6 blok I",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Elektrochemiczne metody analityczne"
+                            },
+                            {
+                                "subject_name": "Analityka surowc\u00f3w energetycznych  i biosubstrat\u00f3w"
+                            },
+                            {
+                                "subject_name": "Interpretacja i wizualizacja danych analitycznych"
+                            },
+                            {
+                                "subject_name": "Analityka odpad\u00f3w i \u015brodowiska glebowego"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh - I st. od 20/21 - sem.6 blok III",
+                    "subject_overview": "Przedmioty obieralne"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.6 do wyboru 1 blok (za 14 pkt ECTS)",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": []
+                    }
+                }
+            ]
+        },
+        {
+            "semester": 7,
+            "subjects": [
+                {
+                    "subject_name": "Praktyka"
+                },
+                {
+                    "subject_name": "Projekt interdyscyplinarny"
+                },
+                {
+                    "subject_name": "Podstawy dzia\u0142alno\u015bci gospodarczej"
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.7 do wyboru A",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Historia chemii"
+                            },
+                            {
+                                "subject_name": "Socjologia"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.7 do wyboru B",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Prawo dla in\u017cynier\u00f3w"
+                            },
+                            {
+                                "subject_name": "Prawo pracy"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.7 do wyboru C lab.",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Laboratorium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Laboratorium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Laboratorium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Laboratorium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Laboratorium dyplomowe"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.7 do wyboru E praca",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Praca dyplomowa"
+                            },
+                            {
+                                "subject_name": "Praca dyplomowa"
+                            },
+                            {
+                                "subject_name": "Praca dyplomowa"
+                            },
+                            {
+                                "subject_name": "Praca dyplomowa"
+                            },
+                            {
+                                "subject_name": "Praca dyplomowa"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "subject_name": "ACh  - I st. od 20/21 - sem.7 do wyboru D semin.",
+                    "subject_overview": "Przedmioty obieralne",
+                    "optional_subjects": {
+                        "subjects": [
+                            {
+                                "subject_name": "Seminarium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Seminarium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Seminarium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Seminarium dyplomowe"
+                            },
+                            {
+                                "subject_name": "Seminarium dyplomowe"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
