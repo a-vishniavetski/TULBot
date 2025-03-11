@@ -20,7 +20,8 @@ def get_html_page(url, retries=5, delay=10):
     :rtype: str
     """
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/123.0.0.0 Safari/537.36"
     }
     # retry retries time the request with respective growing delay
     for attempt in range(retries):
@@ -39,14 +40,10 @@ def get_html_page(url, retries=5, delay=10):
 
 def scrape_major(url):
     """
-    Scrapes the whole major (field of study)
-    Some assumptions:
-    Every semester is a table that as the rows has the subjects with their data
-    Sometimes the table is not the semester but the optional subjects table, in that case they are added to the previous normal semester
-    :param url: url to the major data
-    :type url: str
-    :return: all parsed and extracted data
-    :rtype: dictionary
+    Scrapes the whole major (field of study) Some assumptions: Every semester is a table that as the rows has the
+    subjects with their data Sometimes the table is not the semester but the optional subjects table, in that case
+    they are added to the previous normal semester :param url: url to the major data :type url: str :return: all
+    parsed and extracted data :rtype: dictionary
     """
     webpage = get_html_page(url)
     soup = BeautifulSoup(webpage, "html5lib", from_encoding='utf-8')
@@ -116,7 +113,7 @@ def extract_semester_data(semester: str):
                 subject_name = subject.find('td', attrs={'class': 'w4'}).text
                 semester_data['subjects'].append({'subject_name': subject_name})
                 try:
-                    raw_onclick_attribute = (subject.find('td', attrs={'class': 'w2 doSrodka'})
+                    raw_onclick_attribute = (subject.find('td', attrs={'class': 'w2'})
                                              .find('a').get('onclick'))
                 except AttributeError:
                     # if there is no overview file or the subject is about optional subjects then
@@ -148,10 +145,14 @@ def parse_subject_overview_file(link):
     """"
     Parse the subject overview file and return as a dictionary
     Extracts next features:
+        - Kod przedmiotu
         - Język prowadzenia zajęć
         - Przedmiotowe efekty uczenia się
         - Kierunkowe efekty uczenia się
         - Szczegółowe treści przedmiotu
+        - Bilans godzin
+        - Metody weryfikacji przedmiotowych efektów uczenia się
+        - Wymagania wstępne
     @:param Full link to the overview file
     """
     webpage = get_html_page(link)
@@ -161,7 +162,9 @@ def parse_subject_overview_file(link):
     for row in table_rows:
         # extract only needed data
         data = row.find_all(recursive=False)
-        if data[0].text == 'Język prowadzenia zajęć':
+        if data[0].text == 'Kod przedmiotu':
+            subject_overview_data['subject_id'] = data[1].text
+        elif data[0].text == 'Język prowadzenia zajęć':
             subject_overview_data['lecture_language'] = data[1].text
         elif data[0].text == 'Przedmiotowe efekty uczenia się':
             subject_overview_data['subject_effects'] = data[1].text
@@ -169,6 +172,78 @@ def parse_subject_overview_file(link):
             subject_overview_data['major_study_effects'] = data[1].text
         elif data[0].text == 'Szczegółowe treści przedmiotu':
             subject_overview_data['subject_content'] = data[1].text
+        elif data[0].text == 'Metody weryfikacji przedmiotowych efektów uczenia się':
+            subject_overview_data['subject_effects_verification'] = data[1].text
+        elif data[0].text == 'Wymagania wstępne':
+            subject_overview_data['prerequisites'] = data[1].text
+        elif 'Bilans godzin' in data[0].text:
+            subject_overview_data['time_distribution'] = {}
+            all_lesson_types = data[1].find('table').find_all('tbody')
+            all_lesson_types = [lesson_type.find('tr') for lesson_type in all_lesson_types]
+            for lesson_type in all_lesson_types:
+                if 'SUMA' in lesson_type.find('th'):
+                    subject_overview_data['time_distribution']['total'] = int(lesson_type.find('td').text)
+                    continue
+                lesson_type_name = lesson_type.find('th').text.replace(' ', '_')
+                subject_overview_data['time_distribution'][lesson_type_name] = int(lesson_type.find('td').text)
+
+                # if lesson_type.find('th') == 'Wykład':
+                #     subject_overview_data['time_distribution']['lecture'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Ćwiczenia':
+                #     subject_overview_data['time_distribution']['tutorial'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Laboratorium':
+                #     subject_overview_data['time_distribution']['laboratory'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'E-learning':
+                #     subject_overview_data['time_distribution']['e_learning'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Realizacja zadań laboratoryjnych':
+                #     subject_overview_data['time_distribution']['laboratory_tasks'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie prac projektowych':
+                #     subject_overview_data['time_distribution']['project_tasks_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Projekt':
+                #     subject_overview_data['time_distribution']['project'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Ćwiczenia z wykorzystaniem komputera':
+                #     subject_overview_data['time_distribution']['computer_tasks'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Seminarium':
+                #     subject_overview_data['time_distribution']['seminar'] = int(lesson_type.find('td').text)
+                # elif 'Nauka własna' in lesson_type.find('th')\
+                #         or 'Praca własna' in lesson_type.find('th'):
+                #     subject_overview_data['time_distribution']['self_teaching'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie prezentacji':
+                #     subject_overview_data['time_distribution']['presentation_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do egzaminu':
+                #     subject_overview_data['time_distribution']['exam_preparation'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do zaliczenia ćwiczeń'\
+                #         or lesson_type.find('th') == 'Przygotowanie do ćwiczeń':
+                #     subject_overview_data['time_distribution']['tutorial_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do kolokwiów':
+                #     subject_overview_data['time_distribution']['final_test_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do testu pisemnego':
+                #     subject_overview_data['time_distribution']['written_test_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do zajęć laboratoryjnych':
+                #     subject_overview_data['time_distribution']['laboratory_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie sprawozdań z ćwiczeń laboratoryjnych':
+                #     subject_overview_data['time_distribution']['laboratory_report_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Przygotowanie do dyskusji':
+                #     subject_overview_data['time_distribution']['discussion_preparation'] = int(
+                #         lesson_type.find('td').text)
+                # elif 'literatury' in lesson_type.find('th') \
+                #         or 'bibliotece' in lesson_type.find('th')\
+                #         or 'biblioteka' in lesson_type.find('th')\
+                #         or 'literatura' in lesson_type.find('th'):
+                #     subject_overview_data['time_distribution']['literature_reading'] = int(lesson_type.find('td').text)
+                # elif lesson_type.find('th') == 'Studiowanie materiałów źródłowych' \
+                #         or lesson_type.find('th') == 'Praca z materiałami źródłowymi':
+                #     subject_overview_data['time_distribution']['source_material_reading'] = int(
+                #         lesson_type.find('td').text)
+                # elif 'SUMA' in lesson_type.find('th'):
+                #     subject_overview_data['time_distribution']['total'] = int(lesson_type.find('td').text)
 
     return subject_overview_data
 
@@ -182,4 +257,5 @@ def parse_subject_overview_file(link):
 
 # link with optional subjects
 scrape_major(
-    "https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=analityka%20chemiczna&pkId=1687&p=6947&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4")
+    "https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=analityka%20chemiczna&pkId=1687&p=6947"
+    "&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4")
