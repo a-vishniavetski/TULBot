@@ -6,7 +6,7 @@ import requests
 import time
 
 
-def get_html_page(url, retries=5, delay=1000):
+def get_html_page(url, retries=5, delay=10):
     """
     Access the link with respective delays and retries if failed in order to prevent
     from failing to fetch the page due to being blocked
@@ -88,8 +88,8 @@ def scrape_major(url):
 
 
 def save_to_json(filename, data):
-    with open(f'{filename}.json', 'w') as file:
-        json.dump(data, file, indent=4)
+    with open(f'{filename}.json', 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
 
 def extract_semester_data(semester: str):
