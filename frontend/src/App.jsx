@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import './App.css'
+import ChatWindow from "./ChatWindow.jsx";
 
 function App() {
 
   return (
     <>
-      <Header />
-      <div class="content">
+      {/*<Header />*/}
+      <div className="content">
         <ChatWindow />
       </div>
     </>
