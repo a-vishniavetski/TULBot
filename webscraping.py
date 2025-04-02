@@ -2,8 +2,10 @@
 from bs4 import BeautifulSoup
 import json
 import re
+from bs4.element import Tag
 import requests
 import time
+from urllib.parse import urlparse, parse_qs
 
 
 def get_html_page(url, retries=5, delay=10):
@@ -38,21 +40,57 @@ def get_html_page(url, retries=5, delay=10):
     return None
 
 
-def scrape_major(url):
+def scrape(url):
     """
     Scrapes the whole major (field of study) Some assumptions: Every semester is a table that as the rows has the
     subjects with their data Sometimes the table is not the semester but the optional subjects table, in that case
     they are added to the previous normal semester :param url: url to the major data :type url: str :return: all
     parsed and extracted data :rtype: dictionary
     """
+    major_name = extract_major_name(url)
+
     webpage = get_html_page(url)
+    if webpage is None:
+        print(f"Failed to fetch page: {url}")
+        return {}
+
+    soup = BeautifulSoup(webpage, "html5lib", from_encoding='utf-8')
+
+    # find specialization form, checks if any choice, store choices in spec_values
+    spec_form = soup.find("select", {"name": "sp"})
+    spec_values = []
+    if spec_form:
+        options = spec_form.find_all("option")
+        for option in options:
+            value = option["value"]
+            text = option.text.strip()
+            spec_values.append({"value": value, "text": text})
+
+    # scrape major and specializations
+    if len(spec_values) == 0:
+        scrape_major(url, major_name)
+        print("scrapped major without spec")
+    else:
+        for spec in spec_values:
+            spec_url = url + f"&s={spec["value"]}"
+            spec_name = major_name + "_" + spec["text"]
+            scrape_major(spec_url, spec_name)
+            print(f"scrapped {spec["text"]}")
+
+
+def scrape_major(url, filename):
+    webpage = get_html_page(url)
+    if webpage is None:
+        print(f"Failed to fetch page: {url}")
+        return {}
+
     soup = BeautifulSoup(webpage, "html5lib", from_encoding='utf-8')
 
     base_major = {'semesters': []}
     # get major data as the HTML
     semester_divs = soup.find_all("div", attrs={'class': 'iform'})
 
-    # extracting base major subjects (from 1 to last semester)
+    # extracting base major subjects (from 1st to last semester)
     for semester in semester_divs:
         # if int(semester.find('h3').text.split()[1]) == 5:
         #     break
@@ -72,16 +110,7 @@ def scrape_major(url):
             semester_data = extract_semester_data(semester)
             base_major['semesters'].append(semester_data)
 
-    save_to_json("base_major", base_major)
-
-    # extracting other subjects from specialties
-    # if there are no specialties then add subjects to the base major
-
-    # TODO iterate over all specialties if any and add to the separate jsons
-    # TODO if there are not specialties add to the major json object
-    # TODO save to the json file the extracted data
-
-    return "dupa"
+    save_to_json(filename, base_major)
 
 
 def save_to_json(filename, data):
@@ -248,14 +277,38 @@ def parse_subject_overview_file(link):
     return subject_overview_data
 
 
-# scrape_major(''
-#              'https://programy.p.lodz.pl/ectslabel-web/'
-#              'kierunekSiatkaV4.jsp?l=pl&w=informatyka%20stosowana'
-#              '&pkId=1654&p=6909&stopien=studia%20pierwszego%20stopnia'
-#              '&tryb=studia%20stacjonarne&v=4'
-#              )
+def extract_major_name(url):
+    """
+    Extracts the major name from a given URL.
+    Assumes the major name is stored in the 'w' parameter of the URL.
+    
+    :param url: URL to the major data (e.g., from programy.p.lodz.pl)
+    :type url: str
+    :return: Name of the major (field of study)
+    :rtype: str
+    """
+    try:
+        # Parsowanie URL i ekstrakcja parametrów
+        parsed_url = urlparse(url)
+        params = parse_qs(parsed_url.query)
+        
+        # Wyciągnięcie wartości parametru 'w'
+        if 'w' in params:
+            major_name = params['w'][0]  # Pierwsza wartość parametru 'w'
+            # Dekodowanie URL (np. zamiana %20 na spacje)
+            major_name = major_name.replace('%20', '_')
+            return major_name
+        else:
+            return "Nazwa kierunku nie znaleziona w URL"
+    
+    except Exception as e:
+        print(f"Błąd podczas parsowania URL: {e}")
+        return "Błąd parsowania URL"
 
-# link with optional subjects
-scrape_major(
-    "https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=analityka%20chemiczna&pkId=1687&p=6947"
-    "&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4")
+
+informatyka_stosowana = 'https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=informatyka%20stosowana&pkId=1654&p=6909&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4'
+
+analityka_chemiczna = "https://programy.p.lodz.pl/ectslabel-web/kierunekSiatkaV4.jsp?l=pl&w=analityka%20chemiczna&pkId=1687&p=6947&stopien=studia%20pierwszego%20stopnia&tryb=studia%20stacjonarne&v=4"
+
+
+scrape(informatyka_stosowana)
