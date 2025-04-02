@@ -62,7 +62,7 @@ const ChatWindow = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message..."
             />
-            <button type="submit">Send</button>
+            <button classname="submit-button" type="submit">↑</button>
           </form>
         </div>
       )}
