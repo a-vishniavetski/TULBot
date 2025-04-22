@@ -33,7 +33,7 @@ const ChatWindow = () => {
   return (
     <div className="chatbot-container">
       {/* Chatbot toggle button */}
-      <button className="chatbot-toggle" onClick={toggleChatWindow}>
+      <button onClick={toggleChatWindow} className={isOpen ? "chatbot-button-opened" : "chatbot-button-closed"} >
         {isOpen ? 'Close Chat' : 'Chat with us'}
       </button>
 
@@ -43,7 +43,6 @@ const ChatWindow = () => {
           <div className="chatbot-header">
             <h3>Chatbot</h3>
           </div>
-
           <div className="chatbot-messages">
             {messages.map((message, index) => (
               <div

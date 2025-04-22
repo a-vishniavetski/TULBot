@@ -5,34 +5,48 @@
   z-index: 1000;
 }
 
-.chatbot-toggle {
-  background-color: #007bff;
-  color: white;
+.chatbot-button-opened, .chatbot-button-closed {
+  color: black;
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
 }
 
-.chatbot-toggle:hover {
-  background-color: #0056b3;
+.chatbot-button-closed {
+  background-color: #ff711a;
+}
+
+.chatbot-button-closed:hover {
+  background-color: #c64e01;
+}
+
+.chatbot-button-opened {
+  background-color: #afafaf;
+}
+
+.chatbot-button-opened:hover {
+  background-color: #777575
 }
 
 .chatbot-window {
   width: 400px;
   height: 700px;
-  background-color: #242424;
-  border-radius: 5px;
+  background-color: #0a161d;
+  background-image: url("./assets/polibuda_logo.svg");
+  border-radius: 20px;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
   margin-top: 10px;
   display: flex;
   flex-direction: column;
+  border: 1px  solid #777575;
 }
 
 .chatbot-header {
-  background-color: #403d3d;
+  background-color: #13222a;
   padding: 10px;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid #777575;
+  border-radius: 20px 20px 0 0;
 }
 
 .chatbot-messages {
@@ -50,20 +64,20 @@
 }
 
 .user-message {
-  background-color: #403d3d;
+  background-color: #1b2f3a;
   color: white;
   margin-left: auto;
 }
 
 .bot-message {
-  background-color: #302f2f;
+  background-color: #13222a;
   color: white;
   margin-right: auto;
 }
 
 .chatbot-input {
   padding: 10px;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid #777575;
   display: flex;
   gap: 10px;
 }
@@ -71,14 +85,14 @@
 .chatbot-input input {
   flex: 1;
   padding: 5px;
-  border: 1px solid #ced4da;
+  border: 1px solid #777575;
   border-radius: 10px;
 }
 
 .chatbot-input button {
   padding: 5px 15px;
-  background-color: #007bff;
-  color: white;
+  background-color: #afafaf;
+  color: black;
   border: none;
   border-radius: 30px;
   cursor: pointer;
@@ -86,5 +100,5 @@
 }
 
 .chatbot-input button:hover {
-  background-color: #0056b3;
+  background-color: #777575;
 }
