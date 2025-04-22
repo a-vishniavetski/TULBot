@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './ChatWindow.css';
-import {BsQuestion, BsX} from 'react-icons/bs';
+import {BsX} from 'react-icons/bs';
 
 const ChatWindow = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +36,7 @@ const ChatWindow = () => {
       {/* Chatbot toggle button */}
       {!isOpen && (
       <button onClick={toggleChatWindow} className={isOpen ? "chatbot-button-opened" : "chatbot-button-closed"} >
-        <BsQuestion className="text-xl font-bold" />
+        <span>?</span>
       </button>
       )}
 
@@ -44,11 +44,11 @@ const ChatWindow = () => {
       {isOpen && (
         <div className="chatbot-window">
           <img src="/src/assets/polibuda_logo.svg" alt="Logo" className="chatbot-bg-logo" />
-          <div className="chatbot-header flex justify-between items-center flex-row">
-            <h3>Chatbot</h3>
-            <button onClick={toggleChatWindow} className={isOpen ? "chatbot-button-opened" : "chatbot-button-closed"}>
+          <div className="chatbot-header">
+            <h2 className="relative">Chatbot</h2>
+            <a onClick={toggleChatWindow} className={isOpen ? "chatbot-button-opened" : "chatbot-button-closed"}>
               <BsX className="text-3xl font-bold" />
-            </button>
+            </a>
           </div>
           <div className="chatbot-messages">
             {messages.map((message, index) => (
