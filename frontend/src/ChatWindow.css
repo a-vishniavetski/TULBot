@@ -33,13 +33,23 @@
   width: 400px;
   height: 700px;
   background-color: #0a161d;
-  background-image: url("./assets/polibuda_logo.svg");
   border-radius: 20px;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  border: 1px  solid #777575;
+  border: 1px solid #777575;
+  position: relative;
+  overflow: hidden;
+}
+
+.chatbot-bg-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: scale(150%);
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .chatbot-header {
