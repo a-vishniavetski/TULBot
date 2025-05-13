@@ -1,0 +1,130 @@
+/* Modern Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+.ImgFlagPL { background-image: url('src/ImgFlagPL.png'); }
+.ImgFlagGB { background-image: url('src/ImgFlagGB.png'); }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+#container {
+    background-color: #fff;
+    max-width: 1100px;
+    margin: 20px auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* Header */
+#header {
+    background-color: #21527c;
+    color: white;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#header h1 {
+    font-size: 28px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* Menu */
+#menu {
+    background-color: #e9ecef;
+    padding: 15px;
+}
+
+#menu a {
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background-color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #004080;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+#menu a:hover {
+    background-color: #dbe7ff;
+}
+
+/* Content */
+#contentpadding {
+    padding: 20px;
+}
+
+.content-header {
+    background-color: #f1f1f1;
+    padding: 12px 16px;
+    border-left: 5px solid #004080;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.content-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #004080;
+}
+
+/* Program List */
+.program-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.program-list li {
+    background-color: #f8f9fa;
+    padding: 12px 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.program-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.program-list li.highlighted {
+    background-color: #e0f0ff;
+    font-weight: bold;
+}
+
+.ImgFlagPL, .ImgFlagGB {
+    width: 20px;
+    height: 15px;
+    display: inline-block;
+    margin-left: 8px;
+    background-size: cover;
+}
+
+/* Footer */
+#footer {
+    background-color: #e9ecef;
+    padding: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .program-list {
+        grid-template-columns: 1fr;
+    }
+}

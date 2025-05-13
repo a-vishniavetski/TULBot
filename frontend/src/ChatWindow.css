@@ -18,7 +18,7 @@ button.chatbot-button-closed {
   height: 60px;
   color: white;
   border-radius: 50%;
-  background: radial-gradient(circle, #8B0304 0%, #8b0304 100%);
+  background: radial-gradient(circle, #004080 0%, #004a91 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,7 +47,7 @@ a.chatbot-button-opened {
 }
 
 .chatbot-button-opened:hover {
-  border: 3px solid #8B0304;
+  border: 3px solid #004080;
 }
 
 .chatbot-window {
