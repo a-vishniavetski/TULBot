@@ -5,7 +5,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 
 # Load JSON data
-json_file_path = 'base_major.json'
+json_file_path = '../base_major.json'
 print("Loading data...")
 with open(json_file_path, 'r') as file:
     data = json.load(file)
@@ -39,7 +39,7 @@ def embed_text(text: str) -> list:
 
 
 # Load base_major.json
-with open("base_major.json", "r", encoding="utf-8") as f:
+with open("../base_major.json", "r", encoding="utf-8") as f:
     base_major_data = json.load(f)
 
 # Collect and insert data from both sources
