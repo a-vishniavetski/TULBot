@@ -1,6 +1,7 @@
 import os
 import dotenv
 
+import groq
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -65,12 +66,6 @@ generation_config = GenerationConfig(
     pad_token_id=tokenizer.eos_token_id  # Properly set pad token
 )
 
-# llm = Llama(
-#     model_path=MODEL_PATH,
-#     n_ctx=4096,  # Context window size
-#     n_gpu_layers=-1  # Use all available GPU layers, set to 0 for CPU only
-# )
-
 # Request and response models
 class QueryRequest(BaseModel):
     query: str
@@ -104,31 +99,18 @@ async def process_query(request: QueryRequest):
 #                 "score": score
 #             })
         
-#         # Step 3: Construct prompt for Llama
-#         context = "\n\n".join([f"Document {i+1}:\n{doc['content']}" 
-#                              for i, doc in enumerate(retrieved_documents)])
-        
-
-        
-#         # Step 4: Get response from Llama
-#         llama_response = llm(
-#             prompt,
-#             max_tokens=1024,
-#             stop=["</s>", "Human:"],
-#             echo=False
-#         )
-        
-#         answer = llama_response["choices"][0]["text"].strip()
-        
 #         # Step 5: Return response to user
-        
+
+
+        # context = "\n\n".join([f"Document {i+1}:\n{doc['content']}" 
+        #                      for i, doc in enumerate(retrieved_documents)])
         prompt = PROMPT_BASE.format(context="No documents retrieved from RAG.", query=request.query)
-        inputs = tokenizer(prompt, return_tensors="pt")
-        print(f"Generating response for prompt...")
-        outputs = model.generate(**inputs, generation_config=generation_config)
-        answer =  tokenizer.decode(outputs[0], skip_special_tokens=True)
-        if prompt in answer:
-            answer = answer.split(prompt)[-1].strip()
+
+        is_local = os.getenv("local_model", "false").lower() == "true"
+        if is_local:
+            answer = get_answer_from_local(prompt, request.query)
+        else:
+            answer = get_asnwer_from_groq(prompt, request.query)
         retrieved_documents = [
             {
                 "content": "Sample document content",
@@ -153,6 +135,46 @@ async def process_query(request: QueryRequest):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+def get_answer_from_local(system_prompt, query: str) -> str:
+    try:
+        inputs = tokenizer(system_prompt, return_tensors="pt")
+
+        print(f"Generating response for prompt...")
+
+        outputs = model.generate(**inputs, generation_config=generation_config)
+        answer =  tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        if system_prompt in answer:
+            answer = answer.split(system_prompt)[-1].strip()
+
+        return answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+def get_asnwer_from_groq(system_prompt, query: str) -> str:
+    try:
+        client = groq.Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
+        )
+
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": query,
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+        )
+        answer = chat_completion.choices[0].message.content
+        return answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
