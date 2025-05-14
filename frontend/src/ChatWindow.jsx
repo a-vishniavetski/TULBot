@@ -18,12 +18,14 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    let userMessage = input;
+    setInput('');
     // Add user message
     setMessages([...messages, { text: input, sender: 'user' }]);
 
     try {
-      const data = await apiService.sendQuery(input);
-
+      const data = await apiService.sendQuery(userMessage);
+    
       // Add bot response to the chat
       setMessages(prev => [...prev, {
         text: data.answer, 
@@ -35,11 +37,10 @@ const ChatWindow = () => {
       console.error('Error fetching data:', error);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: 'Error fetching data. Please try again.', sender: 'bot' },
+        { text: 'We are experiencing technical difficulties. Please, try again.', sender: 'bot' },
       ]);
     }
 
-    setInput('');
   };
 
   return (

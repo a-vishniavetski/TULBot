@@ -1,3 +1,6 @@
+import os
+import dotenv
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,15 +10,18 @@ import numpy as np
 # from sentence_transformers import SentenceTransformer
 # from qdrant_client import QdrantClient
 # from qdrant_client.http.models import Filter, FieldCondition, MatchValue
-# from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, login
+from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 # from llama_cpp import Llama
+
+from prompts import PROMPT_BASE
 
 app = FastAPI(title="RAG Backend")
 
 # Add CORS middleware to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,11 +39,31 @@ app.add_middleware(
 # )
 # COLLECTION_NAME = "your_collection_name"  # Replace with your collection name
 
-# # Initialize Llama model
-# # Replace with your preferred Llama model from HuggingFace
-# MODEL_ID = "TheBloke/Llama-2-7B-Chat-GGUF"  # Replace with your preferred model
-# MODEL_BASENAME = "llama-2-7b-chat.q4_K_M.gguf"  # Replace with the specific weights file
+# Initialize Llama model
+# Replace with your preferred Llama model from HuggingFace
+dotenv.load_dotenv()
+hf_token = os.getenv('hf_token')
+if hf_token is None:
+    raise ValueError("Hugging Face token not found in environment variables.")
+login(token=hf_token)
+
+MODEL_ID = "TLLMDH/1b_test"  # Replace with your preferred model
+MODEL_BASENAME = "llama-2-7b-chat.q4_K_M.gguf"  # Replace with the specific weights file
 # MODEL_PATH = hf_hub_download(repo_id=MODEL_ID, filename=MODEL_BASENAME)
+
+tokenizer = AutoTokenizer.from_pretrained("eryk-mazus/polka-1.1b-chat")
+model = AutoModelForCausalLM.from_pretrained("eryk-mazus/polka-1.1b-chat")
+
+# Set proper generation configuration
+generation_config = GenerationConfig(
+    max_new_tokens=128,  # Controls the maximum length of the generation
+    do_sample=True,      # Enable sampling
+    temperature=0.65,     # Control randomness
+    top_p=0.9,           # Nucleus sampling
+    top_k=10,            # Top-k sampling
+    repetition_penalty=1.4,  # Penalize repetition
+    pad_token_id=tokenizer.eos_token_id  # Properly set pad token
+)
 
 # llm = Llama(
 #     model_path=MODEL_PATH,
@@ -82,14 +108,7 @@ async def process_query(request: QueryRequest):
 #         context = "\n\n".join([f"Document {i+1}:\n{doc['content']}" 
 #                              for i, doc in enumerate(retrieved_documents)])
         
-#         prompt = f"""You are a helpful assistant that answers questions based on the provided context.
-# Context information is below:
-# {context}
 
-# Given the context information and not prior knowledge, answer the following question:
-# {request.query}
-
-# Answer:"""
         
 #         # Step 4: Get response from Llama
 #         llama_response = llm(
@@ -102,7 +121,14 @@ async def process_query(request: QueryRequest):
 #         answer = llama_response["choices"][0]["text"].strip()
         
 #         # Step 5: Return response to user
-        answer = "Up and running"
+        
+        prompt = PROMPT_BASE.format(context="No documents retrieved from RAG.", query=request.query)
+        inputs = tokenizer(prompt, return_tensors="pt")
+        print(f"Generating response for prompt...")
+        outputs = model.generate(**inputs, generation_config=generation_config)
+        answer =  tokenizer.decode(outputs[0], skip_special_tokens=True)
+        if prompt in answer:
+            answer = answer.split(prompt)[-1].strip()
         retrieved_documents = [
             {
                 "content": "Sample document content",
@@ -110,6 +136,12 @@ async def process_query(request: QueryRequest):
                 "score": 0.95
             }
         ]
+
+        print(f"=== DEBUG ===")
+        print(f"Query: {request.query}\n===")
+        print(f"RAG data: {retrieved_documents}\n===")
+        print(f"Prompt: {prompt}===")
+        print(f"Model answer: {answer}===")
         return QueryResponse(
             answer=answer,
             sources=retrieved_documents
