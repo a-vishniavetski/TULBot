@@ -1,0 +1,10 @@
+python-dotenv
+fastapi
+uvicorn
+pydantic
+httpx
+numpy
+#qdrant-client==1.4.0
+huggingface-hub==0.16.4
+transformers
+#llama-cpp-python==0.1.77

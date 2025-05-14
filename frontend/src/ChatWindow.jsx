@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './ChatWindow.css';
 import {BsX} from 'react-icons/bs';
+import apiService from './services/api';
 
 const ChatWindow = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,22 +14,33 @@ const ChatWindow = () => {
   };
 
   // Handle message submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    let userMessage = input;
+    setInput('');
     // Add user message
     setMessages([...messages, { text: input, sender: 'user' }]);
 
-    // Simulate bot response (you can replace this with actual API call)
-    setTimeout(() => {
+    try {
+      const data = await apiService.sendQuery(userMessage);
+    
+      // Add bot response to the chat
       setMessages(prev => [...prev, {
-        text: `Echo: ${input}`,
-        sender: 'bot'
+        text: data.answer, 
+        sender: 'bot',
+        sources: data.sources
       }]);
-    }, 500);
+      
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'We are experiencing technical difficulties. Please, try again.', sender: 'bot' },
+      ]);
+    }
 
-    setInput('');
   };
 
   return (
