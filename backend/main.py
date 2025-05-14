@@ -1,25 +1,24 @@
 import os
 import dotenv
 
-import groq
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-import httpx
 import numpy as np
-# from sentence_transformers import SentenceTransformer
 # from qdrant_client import QdrantClient
 # from qdrant_client.http.models import Filter, FieldCondition, MatchValue
-from huggingface_hub import hf_hub_download, login
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
-# from llama_cpp import Llama
 
 from prompts import PROMPT_BASE
+from language_model import (
+    setup_local_language_model, 
+    get_answer_from_local, 
+    get_asnwer_from_groq
+)
 
+# ============================== APP SETTINGS =====================================
 app = FastAPI(title="RAG Backend")
-
-# Add CORS middleware to allow frontend requests
+dotenv.load_dotenv()  # .env variables
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -28,10 +27,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Sentence Transformer for vectorization
-# You can replace with other embedding models as needed
-# embedder = SentenceTransformer('all-MiniLM-L6-v2')
+# ============================== LANGUAGE MODEL SETUP ==============================
+is_local_language_model = os.getenv("local_model", "false").lower() == "true"
+if is_local_language_model:
+    tokenizer, model, generation_config = setup_local_language_model()
+else:
+    tokenizer, model, generation_config = None, None, None
 
+# ============================== POSSIBLE QDRANT SETUP =============================
 # Initialize Qdrant client
 # Replace with your actual Qdrant cloud instance details or local instance
 # qdrant_client = QdrantClient(
@@ -42,31 +45,7 @@ app.add_middleware(
 
 # Initialize Llama model
 # Replace with your preferred Llama model from HuggingFace
-dotenv.load_dotenv()
-hf_token = os.getenv('hf_token')
-if hf_token is None:
-    raise ValueError("Hugging Face token not found in environment variables.")
-login(token=hf_token)
 
-MODEL_ID = "TLLMDH/1b_test"  # Replace with your preferred model
-MODEL_BASENAME = "llama-2-7b-chat.q4_K_M.gguf"  # Replace with the specific weights file
-# MODEL_PATH = hf_hub_download(repo_id=MODEL_ID, filename=MODEL_BASENAME)
-
-tokenizer = AutoTokenizer.from_pretrained("eryk-mazus/polka-1.1b-chat")
-model = AutoModelForCausalLM.from_pretrained("eryk-mazus/polka-1.1b-chat")
-
-# Set proper generation configuration
-generation_config = GenerationConfig(
-    max_new_tokens=128,  # Controls the maximum length of the generation
-    do_sample=True,      # Enable sampling
-    temperature=0.65,     # Control randomness
-    top_p=0.9,           # Nucleus sampling
-    top_k=10,            # Top-k sampling
-    repetition_penalty=1.4,  # Penalize repetition
-    pad_token_id=tokenizer.eos_token_id  # Properly set pad token
-)
-
-# Request and response models
 class QueryRequest(BaseModel):
     query: str
     top_k: int = 5  # Number of results to retrieve from Qdrant
@@ -99,16 +78,12 @@ async def process_query(request: QueryRequest):
 #                 "score": score
 #             })
         
-#         # Step 5: Return response to user
-
-
         # context = "\n\n".join([f"Document {i+1}:\n{doc['content']}" 
         #                      for i, doc in enumerate(retrieved_documents)])
         prompt = PROMPT_BASE.format(context="No documents retrieved from RAG.", query=request.query)
 
-        is_local = os.getenv("local_model", "false").lower() == "true"
-        if is_local:
-            answer = get_answer_from_local(prompt, request.query)
+        if is_local_language_model and tokenizer and model:
+            answer = get_answer_from_local(prompt, request.query, tokenizer, model)
         else:
             answer = get_asnwer_from_groq(prompt, request.query)
         retrieved_documents = [
@@ -135,46 +110,6 @@ async def process_query(request: QueryRequest):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
-
-def get_answer_from_local(system_prompt, query: str) -> str:
-    try:
-        inputs = tokenizer(system_prompt, return_tensors="pt")
-
-        print(f"Generating response for prompt...")
-
-        outputs = model.generate(**inputs, generation_config=generation_config)
-        answer =  tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-        if system_prompt in answer:
-            answer = answer.split(system_prompt)[-1].strip()
-
-        return answer
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
-
-def get_asnwer_from_groq(system_prompt, query: str) -> str:
-    try:
-        client = groq.Groq(
-            api_key=os.getenv("GROQ_API_KEY"),
-        )
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": query,
-                }
-            ],
-            model="llama-3.3-70b-versatile",
-        )
-        answer = chat_completion.choices[0].message.content
-        return answer
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
