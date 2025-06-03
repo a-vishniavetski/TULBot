@@ -12,7 +12,7 @@ const apiService = {
    * @param {number} [topK=5] - Number of results to retrieve from the vector DB
    * @returns {Promise<Object>} - The response containing answer and sources
    */
-  async sendQuery(query, topK = 5) {
+  async sendQuery(query, type, topK = 5) {
     try {
       const response = await fetch(`${API_BASE_URL}/query`, {
         method: 'POST',
@@ -21,6 +21,7 @@ const apiService = {
         },
         body: JSON.stringify({
           query,
+          collection_name: type,
           top_k: topK
         }),
       });

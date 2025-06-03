@@ -7,6 +7,7 @@ const ChatWindow = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [type, setType] = useState('subjects');
 
   // Toggle chatbot window visibility
   const toggleChatWindow = () => {
@@ -24,7 +25,7 @@ const ChatWindow = () => {
     setMessages([...messages, { text: input, sender: 'user' }]);
 
     try {
-      const data = await apiService.sendQuery(userMessage);
+      const data = await apiService.sendQuery(userMessage, type);
     
       // Add bot response to the chat
       setMessages(prev => [...prev, {
@@ -80,6 +81,25 @@ const ChatWindow = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message..."
             />
+            {/* Toggle for majors or subjects */}
+            <label>
+              <input
+                type="radio"
+                value="majors"
+                checked={type === 'majors'}
+                onChange={() => setType('majors')}
+              />
+              Majors
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="subjects"
+                checked={type === 'subjects'}
+                onChange={() => setType('subjects')}
+              />
+              Subjects
+            </label>
             <button classname="submit-button" type="submit">↑</button>
           </form>
         </div>

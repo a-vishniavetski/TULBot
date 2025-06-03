@@ -86,6 +86,7 @@ generation_config = GenerationConfig(
 # Request and response models
 class QueryRequest(BaseModel):
     query: str
+    collection_name: str
     top_k: int = 5  # Number of results to retrieve from Qdrant
 
 class QueryResponse(BaseModel):
