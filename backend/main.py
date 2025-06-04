@@ -45,7 +45,7 @@ client = QdrantClient(
 
 )
 
-COLLECTION_NAME = "university_subjects"
+COLLECTINO_NAME = "subjects"
 
 # Initialize Llama model
 # Replace with your preferred Llama model from HuggingFace
@@ -94,6 +94,7 @@ class QueryResponse(BaseModel):
     sources: List[Dict[Any, Any]] = []
 
 
+
 @app.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     try:
@@ -105,11 +106,11 @@ async def process_query(request: QueryRequest):
             outputs = modelA(**inputs)
 
         # Get the [CLS] token vector (query vector)
-        query_vector = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
+        query_vector = await get_embeddings(user_query)  # your embedding function, returns e.g. 768-d vector
 
         # Step 2: Search Qdrant using the encoded query vector
         search_result = client.search(
-            collection_name=COLLECTION_NAME,  # Adjust collection name as needed
+            collection_name=request.collection_name,
             query_vector=query_vector,
             limit=request.top_k,  # Use the value from the request
             search_params=SearchParams(hnsw_ef=128, exact=False)
@@ -117,19 +118,35 @@ async def process_query(request: QueryRequest):
 
         # Step 3: Extract and format the retrieved documents
         retrieved_documents = []
-        for i, result in enumerate(search_result, 1):
-            payload = result.payload
-            retrieved_documents.append({
-                "content": payload.get('subject_content', ''),
-                "metadata": {
-                    "subject_name": payload.get('subject_name'),
-                    "subject_id": payload.get('subject_id'),
-                    "major": payload.get('major')
-                },
-                "score": result.score
-            })
 
-        # Step 4: Construct the prompt for Llama model
+        if request.collection_name == "majors":
+            for i, result in enumerate(search_result, 1):
+                payload = result.payload
+                retrieved_documents.append({
+                    "content": payload.get("description", ""),
+                    "metadata": {
+                        "major_name": payload.get("major"),
+                    },
+                    "score": result.score
+                })
+
+        elif request.collection_name == "subjects":
+            for i, result in enumerate(search_result, 1):
+                payload = result.payload
+                retrieved_documents.append({
+                    "content": payload.get("subject_content", ""),
+                    "metadata": {
+                        "subject_name": payload.get("subject_name"),
+                        "subject_id": payload.get("subject_id"),
+                        "specialisation": payload.get("specialisation")
+                    },
+                    "score": result.score
+                })
+
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported collection: {request.collection_name}")
+
+            # Step 4: Construct the prompt for Llama model
         context = "\n\n".join([f"Document {i + 1}:\n{doc['content']}"
                                for i, doc in enumerate(retrieved_documents)])
 
