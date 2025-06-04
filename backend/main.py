@@ -17,7 +17,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig, 
 from qdrant_client.grpc import SearchParams
 import torch
 from transformers import AutoTokenizer, AutoModel, DistilBertTokenizer, DistilBertModel
-
+from qdrant.importing_data_to_qdrant import get_embeddings
 from prompts import PROMPT_BASE
 
 
@@ -94,19 +94,14 @@ class QueryResponse(BaseModel):
     sources: List[Dict[Any, Any]] = []
 
 
-
 @app.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     try:
         # Step 1: Encode the query using your tokenizer
-        query_text = request.query  # or you can hardcode as you did in your other example
-        inputs = tokenizerA(query_text, return_tensors='pt', padding=True, truncation=True, max_length=512)
-
-        with torch.no_grad():
-            outputs = modelA(**inputs)
+        query_text = request.query
 
         # Get the [CLS] token vector (query vector)
-        query_vector = await get_embeddings(user_query)  # your embedding function, returns e.g. 768-d vector
+        query_vector = await get_embeddings(query_text)  # embedding function, returns e.g. 768-d vector
 
         # Step 2: Search Qdrant using the encoded query vector
         search_result = client.search(
@@ -176,6 +171,8 @@ async def process_query(request: QueryRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+
 
 
 @app.get("/health")
