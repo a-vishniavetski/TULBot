@@ -141,9 +141,9 @@ async def process_query(request: QueryRequest):
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported collection: {request.collection_name}")
 
-            # Step 4: Construct the prompt for Llama model
-        context = "\n\n".join([f"Document {i + 1}:\n{doc['content']}"
-                               for i, doc in enumerate(retrieved_documents)])
+        context = "\n\n".join([
+            f"Document {i + 1}:\n{doc['content']}" for i, doc in enumerate(retrieved_documents)
+        ])
 
         prompt = PROMPT_BASE.format(context=context, query=request.query)
         inputs = tokenizer(prompt, return_tensors="pt")
