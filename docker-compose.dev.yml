@@ -10,3 +10,12 @@ services:
       - /app/node_modules # Prevent overriding node_modules in container by the host
     environment:
       - NODE_ENV=development
+
+  backend:
+    build:
+      context: ./
+      dockerfile: ./backend/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development

@@ -4,7 +4,8 @@ uvicorn
 pydantic
 httpx
 numpy
-#qdrant-client==1.4.0
+qdrant-client==1.4.0
 huggingface-hub==0.16.4
 transformers
+groq
 #llama-cpp-python==0.1.77
