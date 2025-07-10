@@ -3,7 +3,4 @@ based on the provided context. Politechnika Łódzka is a state university in Po
 Context information about the study programmes (programy studiów) is below:
 {context}
 
-Given the context information and not prior knowledge, answer the following user query:
-{query}
-
-Answer:"""
+Given the context information and not prior knowledge, answer the user query."""
