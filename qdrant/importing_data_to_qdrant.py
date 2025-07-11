@@ -20,7 +20,7 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-multilingual-cased")
 model = AutoModel.from_pretrained("bert-base-multilingual-cased")
 
 client = QdrantClient(
-    url="https://bc99e4de-626a-4844-bd3c-ddadabe39525.europe-west3-0.gcp.cloud.qdrant.io:6333",  # Replace with your actual URL
+    url= os.getenv('qdrant_endpoint'),
     api_key = os.getenv('qdrant_api_key')
 
 )
@@ -39,22 +39,6 @@ async def get_embeddings(text: str) -> list:
     return embeddings
 
 
-def embed_text(text: str) -> list:
-    """Generate embeddings for the input text using DistilBERT model."""
-    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
-    return embeddings
-
-# Example usage
-# text = "This is an example sentence."
-# embeddings = embed_text(text)
-# print(embeddings)
-
-
-
-
 def create_collection(collection_name):
     """Creates the university_subjects collection in Qdrant."""
     # Get the dimensionality of the hidden states from the model's config
@@ -68,58 +52,7 @@ def create_collection(collection_name):
     print(f"Collection '{collection_name}' created with vector size {vector_size}.")
 
 
-def insert_subject1(file_path: str, client: QdrantClient = client, model=model, tokenizer=tokenizer, COLLECTION_NAME=collection_name):
-    """
-    Vectorizes subject description and inserts it with metadata into Qdrant.
-    The data should be loaded from a JSON file at the specified path.
-    If the subject already exists, adds new major if not already present.
-    """
-    # Load the JSON data
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
-    # Extract global metadata
-    major = data.get("major", "")
-    mode = data.get("mode", "")
-    lang = data.get("lang", "")
-    semesters = data.get("semesters", [])
-
-    for semester in semesters:
-        semester_number = semester.get("semester", "")
-        for subject in semester.get("subjects", []):
-            subject_name = subject.get("subject_name", "")
-            optional_subjects = subject.get("optional_subjects", {}).get("subjects", [])
-
-            if optional_subjects:
-                # Process each optional subject
-                for opt_subject in optional_subjects:
-                    process_major_subjects1(
-                        opt_subject,
-                        major=f"{major} - {subject_name}",
-                        mode=mode,
-                        lang=lang,
-                        semester_number=semester_number,
-                        client=client,
-                        model=model,
-                        tokenizer=tokenizer,
-                        COLLECTION_NAME=COLLECTION_NAME
-                    )
-            else:
-                # Regular subject
-                process_major_subjects1(
-                    subject,
-                    major=major,
-                    mode=mode,
-                    lang=lang,
-                    semester_number=semester_number,
-                    client=client,
-                    model=model,
-                    tokenizer=tokenizer,
-                    COLLECTION_NAME=COLLECTION_NAME
-                )
-
-
-def insert_subject2(file_path: str, client: QdrantClient = client, model=model, tokenizer=tokenizer, COLLECTION_NAME=collection_name):
+def insert_subject(file_path: str, client: QdrantClient = client, model=model, tokenizer=tokenizer, COLLECTION_NAME=collection_name):
     """
     Vectorizes subject description and inserts it with metadata into Qdrant.
     The data should be loaded from a JSON file at the specified path.
@@ -130,7 +63,7 @@ def insert_subject2(file_path: str, client: QdrantClient = client, model=model, 
         data = json.load(file)
 
     # Extract global metadata
-    specialisation = data.get("specialization", "")  # changed from 'major'
+    specialisation = data.get("specialization", "") 
     mode = data.get("mode", "")
     lang = data.get("lang", "")
     semesters = data.get("semesters", [])
@@ -138,15 +71,15 @@ def insert_subject2(file_path: str, client: QdrantClient = client, model=model, 
     for semester in semesters:
         semester_number = semester.get("semester", "")
         for subject in semester.get("subjects", []):
-            subject_name = subject.get("subject_name", "")
             optional_subjects = subject.get("optional_subjects", {}).get("subjects", [])
 
             if optional_subjects:
+                specialisation = f"{specialisation} - przedmiot obieralny"
                 # Process each optional subject with modified specialisation name
                 for opt_subject in optional_subjects:
-                    process_major_subjects2(
+                    process_major_subjects(
                         opt_subject,
-                        specialisation=f"{specialisation} - przedmiot obieralny",
+                        specialisation=specialisation,
                         mode=mode,
                         lang=lang,
                         semester_number=semester_number,
@@ -157,7 +90,7 @@ def insert_subject2(file_path: str, client: QdrantClient = client, model=model, 
                     )
             else:
                 # Regular subject
-                process_major_subjects2(
+                process_major_subjects(
                     subject,
                     specialisation=specialisation,
                     mode=mode,
@@ -170,7 +103,7 @@ def insert_subject2(file_path: str, client: QdrantClient = client, model=model, 
                 )
 
 
-def process_major_subjects1(subject, major, mode, lang, semester_number, client, model, tokenizer, COLLECTION_NAME=collection_name):
+def process_major_subjects(subject, specialisation, mode, lang, semester_number, client, model, tokenizer, COLLECTION_NAME=collection_name):
     """
     Helper function to process a single subject and insert/update it in Qdrant.
     """
@@ -187,101 +120,7 @@ def process_major_subjects1(subject, major, mode, lang, semester_number, client,
     time_distribution = overview.get("time_distribution", {})
 
     # Vectorize the subject content
-    inputs = tokenizer(subject_content, return_tensors='pt', padding=True, truncation=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    vector = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
-
-    # Create filter to check if the subject already exists
-    search_filter = Filter(
-        must=[
-            FieldCondition(
-                key="subject_id",
-                match=MatchValue(value=subject_id)
-            )
-        ]
-    )
-
-    # Perform the search
-    search_results = client.search(
-        collection_name=COLLECTION_NAME,
-        query_vector=vector,
-        query_filter=search_filter,
-        limit=1,
-        search_params=SearchParams(hnsw_ef=128, exact=False)
-    )
-
-    if search_results:
-        existing_payload = search_results[0].payload
-        existing_major = existing_payload.get("major", "")
-
-        if major not in existing_major:
-            updated_major = f"{existing_major}, {major}".strip(", ")
-            existing_payload["major"] = updated_major
-
-            updated_point = PointStruct(
-                id=search_results[0].id,
-                vector=vector,
-                payload=existing_payload
-            )
-
-            client.upsert(
-                collection_name=COLLECTION_NAME,
-                points=[updated_point]
-            )
-
-            print(f"Updated subject '{subject_name}' (ID: {subject_id}) with new major '{major}'.")
-        else:
-            print(f"Subject '{subject_name}' (ID: {subject_id}) already has the major '{major}'.")
-    else:
-        payload = {
-            "subject_name": subject_name,
-            "subject_id": subject_id,
-            "major": major,
-            "mode": mode,
-            "lang": lang,
-            "lecture_language": lecture_language,
-            "prerequisites": prerequisites,
-            "subject_effects": subject_effects,
-            "subject_effects_verification": subject_effects_verification,
-            "major_study_effects": major_study_effects,
-            "subject_content": subject_content,
-            "time_distribution": time_distribution,
-            "semester": semester_number
-        }
-
-        point = PointStruct(
-            id=str(uuid.uuid4()),
-            vector=vector,
-            payload=payload
-        )
-
-        client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=[point]
-        )
-
-        print(f"Inserted subject '{subject_name}' (ID: {subject_id}) into collection.")
-
-
-def process_major_subjects2(subject, specialisation, mode, lang, semester_number, client, model, tokenizer, COLLECTION_NAME=collection_name):
-    """
-    Helper function to process a single subject and insert/update it in Qdrant.
-    """
-    subject_name = subject.get("subject_name", "")
-    overview = subject.get("subject_overview", {})
-
-    subject_id = overview.get("subject_id", "")
-    lecture_language = overview.get("lecture_language", "")
-    prerequisites = overview.get("prerequisites", "")
-    subject_effects = overview.get("subject_effects", "")
-    subject_effects_verification = overview.get("subject_effects_verification", "")
-    major_study_effects = overview.get("major_study_effects", "")
-    subject_content = overview.get("subject_content", "")
-    time_distribution = overview.get("time_distribution", {})
-
-    # Vectorize the subject content
-    inputs = tokenizer(subject_content, return_tensors='pt', padding=True, truncation=True, max_length=512)
+    inputs = tokenizer(subject_content, return_tensors='pt', padding=True, truncation=True)
     with torch.no_grad():
         outputs = model(**inputs)
     vector = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
@@ -357,56 +196,6 @@ def process_major_subjects2(subject, specialisation, mode, lang, semester_number
 
         print(f"Inserted subject '{subject_name}' (ID: {subject_id}) into collection.")
 
-def insert_majors_from_file(file_path: str, client: QdrantClient, model, tokenizer, COLLECTION_NAME: str):
-    """
-    Loads major descriptions from a JSON file and inserts them into Qdrant with vector embeddings.
-
-    Args:
-        file_path (str): Path to JSON file containing majors and descriptions.
-        client (QdrantClient): Qdrant client instance.
-        model: HuggingFace transformer model for embedding.
-        tokenizer: Tokenizer for the model.
-        COLLECTION_NAME (str): Qdrant collection name to insert data into.
-    """
-    print(f"Loading majors from file: {file_path}")
-    with open(file_path, 'r', encoding='utf-8') as file:
-
-        data = json.load(file)
-
-    print(f"Loaded {len(data)} majors from file.")
-
-    for idx, (major_name, description) in enumerate(data.items(), start=1):
-        print(f"\nProcessing major {idx}/{len(data)}: {major_name}")
-
-        # Tokenize and get the embedding vector
-        inputs = tokenizer(description, return_tensors="pt", truncation=True, padding=True)
-        with torch.no_grad():
-            embedding = model(**inputs).last_hidden_state.mean(dim=1).squeeze().tolist()
-
-        point_id = str(uuid.uuid4())
-        print(f"Generated point ID: {point_id}")
-        print(f"Embedding vector length: {len(embedding)}")
-
-        payload = {
-            "major": major_name,
-            "description": description
-        }
-
-        # Insert into Qdrant
-        print("Inserting into Qdrant...")
-        client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=[
-                PointStruct(
-                    id=point_id,
-                    vector=embedding,
-                    payload=payload
-                )
-            ]
-        )
-        print(f"Inserted major '{major_name}' into collection '{COLLECTION_NAME}'")
-
-    print("\nAll majors have been processed and inserted.")
 
 def process_files_in_folder(folder_path: str):
     """
@@ -425,7 +214,7 @@ def process_files_in_folder(folder_path: str):
         print(f"Processing file: {json_file.name}")
         try:
             # Pass the file path and other necessary parameters to insert_subject
-            insert_subject2(json_file)
+            insert_subject(json_file)
         except Exception as e:
             print(f"Failed to process {json_file.name}: {e}")
 
@@ -436,15 +225,6 @@ async def main():
 
     print(client.get_collections())
 
-    # await insert_majors_from_file(
-    #     file_path="data/FTIMS-majors.json",
-    #     client=client,
-    #     model=model,
-    #     tokenizer=tokenizer,
-    #     COLLECTION_NAME="majors"
-    # )
-
-    # folder_path = "data/IS"
     # await process_files_in_folder(folder_path)
     # await insert_subject1("data/FTIMS_majors/Aktuariat_i_analiza_finansowa_2024-stacjonarne_pl.json")
 
