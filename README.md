@@ -1,9 +1,9 @@
+[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+<img src='https://img.shields.io/badge/python-3.11+-blue.svg'>
+
 ## TULBot 
 
 > An RAG-powered chatbot with Groq API and Qdrant, that answers questions about Lodz University of Technology.
-
-[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
-<img src='https://img.shields.io/badge/python-3.11+-blue.svg'>
 
 <!--
 ## Navigation
