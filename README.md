@@ -3,7 +3,7 @@
 
 ## TULBot 
 
-> An RAG-powered chatbot with Groq API and Qdrant, that answers questions about Lodz University of Technology.
+> An RAG-powered chatbot made with LangChain, Qdrant, and Google Gemini API that answers questions about Lodz University of Technology.
 
 <!--
 ## Navigation
