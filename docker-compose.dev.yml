@@ -17,5 +17,6 @@ services:
       dockerfile: ./backend/Dockerfile.dev
     ports:
       - "8000:8000"
-    environment:
-      - ENV=development
+    volumes:
+      - ./backend:/code/app/backend
+    env_file: "./backend/.env"
