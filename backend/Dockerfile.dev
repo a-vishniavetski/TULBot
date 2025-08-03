@@ -7,11 +7,13 @@ WORKDIR /code
 
 COPY ./backend/requirements.txt /code/backend/requirements.txt
 
+RUN pip install --no-cache-dir --upgrade langchain[google-genai]
+RUN pip install --no-cache-dir --upgrade langgraph
+RUN pip install --no-cache-dir --upgrade langchain-community
+RUN pip install --no-cache-dir --upgrade langchain-ollama
+RUN pip install --no-cache-dir --upgrade langchain-qdrant
 
-RUN pip install --no-cache-dir --upgrade -r /code/backend/requirements.txt
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-RUN pip install torch-geometric
-
+RUN pip install --no-cache-dir --upgrade -r /code/backend/requirements.txt -i https://pypi.python.org/simple/
 
 COPY ./backend /code/app/backend
 COPY ./qdrant/ /code/app/qdrant

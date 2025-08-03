@@ -4,14 +4,4 @@ uvicorn
 pydantic
 httpx
 numpy
-qdrant-client==1.4.0
-huggingface-hub==0.16.4
-transformers
-groq
-langchain[google-genai]
-langchain[groq]
-langchain-google-genai
-langchain-core
-langgraph 
-langchain-community
-#llama-cpp-python==0.1.77
+qdrant-client
