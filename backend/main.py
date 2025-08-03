@@ -1,4 +1,5 @@
 import os
+import getpass
 import sys
 import dotenv
 import logging
@@ -45,6 +46,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Initialize Sentence Transformer for vectorization
 # You can replace with other embedding models as needed
@@ -107,7 +109,7 @@ class QueryResponse(BaseModel):
     sources: List[Dict[Any, Any]] = []
 
 
-@app.post("/query", response_model=QueryResponse)
+@app.post("/query_deprecated", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     try:
         # Step 1: Encode the query using your tokenizer
@@ -191,6 +193,26 @@ async def process_query(request: QueryRequest):
         logging.error(f"Error processing query: {str(e)}")
 
 
+
+@app.post("/query", response_model=QueryResponse)
+async def process_query(request: QueryRequest):
+    from _langchain import get_langchain_service, LangChainService
+
+    _langchain_service: LangChainService = get_langchain_service()
+
+    input_message = request.query
+    messages = [{"role": "user", "content": input_message}]
+
+    try:
+        response = await _langchain_service.process_query(messages)
+        print(f"Response: {response}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    return QueryResponse(
+        answer=response["messages"][-1].content,
+        sources=[{"content": "Dummy source content", "metadata": {"source": "dummy_source"}}]
+    )
 
 
 @app.get("/health")
