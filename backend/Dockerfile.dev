@@ -1,0 +1,24 @@
+
+FROM python:3.11
+
+
+WORKDIR /code
+
+
+COPY ./backend/requirements.txt /code/backend/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade langchain[google-genai]
+RUN pip install --no-cache-dir --upgrade langgraph
+RUN pip install --no-cache-dir --upgrade langchain-community
+RUN pip install --no-cache-dir --upgrade langchain-ollama
+RUN pip install --no-cache-dir --upgrade langchain-qdrant
+
+RUN pip install --no-cache-dir --upgrade -r /code/backend/requirements.txt -i https://pypi.python.org/simple/
+
+COPY ./backend /code/app/backend
+COPY ./qdrant/ /code/app/qdrant
+
+
+# CMD ["fastapi", "run", "app/main.py", "--port", "80"]  # Default FastAPI dev server - we have uvicorn instead
+
+CMD ["python", "app/backend/main.py"]
